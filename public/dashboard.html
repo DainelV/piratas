@@ -3,137 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mi barco — Piratas del Caribe</title>
-    <link rel="stylesheet" href="/css/estilo.css" />
+    <title>Dashboard - Piratas del Caribe</title>
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
-    <h1>🏴‍☠️ Bienvenido, capitán</h1>
-    <p class="subtitulo" id="emailUsuario"></p>
+    <div class="container">
+      <nav>
+        <a href="/dashboard.html">🏠 Dashboard</a>
+        <a href="/perfil.html">👤 Perfil</a>
+        <a href="/pvp.html">⚔️ Batallas</a>
+        <a href="#" id="logoutBtn">🚪 Salir</a>
+      </nav>
 
-    <div class="card">
-      <div class="stat">🎖️ Nivel <b id="nivelJugador">1</b> / 100</div>
-      <div class="stat">🪙 Oro: <b id="oro">0</b></div>
-      <div class="stat">🧑‍🦱 Piratas: <b id="piratas">0</b></div>
-      <p id="estadoReferido" class="mensaje"></p>
-    </div>
+      <h1>⚓ Taberna del Puerto</h1>
 
-    <div class="card">
-      <p class="subtitulo">Producción de oro</p>
-      <div class="stat" style="font-size: 1rem">
-        Actual: <b id="produccionActual">-</b> oro/min
+      <div class="dashboard-grid">
+        <div class="card">
+          <h3>🏴‍☠️ Mi Barco</h3>
+          <p><strong>Nivel:</strong> <span id="nivel">1</span></p>
+          <p>
+            <strong>HP:</strong> <span id="hp">100</span>/<span id="hpMax"
+              >100</span
+            >
+          </p>
+          <p><strong>Velas:</strong> <span id="velas">1</span></p>
+          <p><strong>Cañones:</strong> <span id="canones">1</span></p>
+          <p><strong>Casco:</strong> <span id="casco">1</span></p>
+        </div>
+
+        <div class="card">
+          <h3>💰 Tesoro</h3>
+          <p><strong>Oro:</strong> <span id="oro">0</span></p>
+          <p>
+            <strong>Piratas (Referidos):</strong> <span id="piratas">0</span>
+          </p>
+          <p>
+            <strong>Producción:</strong> <span id="produccion">0</span> oro/min
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>⚔️ Estadísticas</h3>
+          <p><strong>Victorias PvP:</strong> <span id="victorias">0</span></p>
+          <p><strong>Derrotas PvP:</strong> <span id="derrotas">0</span></p>
+          <p><strong>Nivel de Barco:</strong> <span id="nivelBarco">0</span></p>
+        </div>
       </div>
-      <div class="stat" style="font-size: 1rem">
-        Próximo nivel (<span id="proximoNivelNum">-</span>):
-        <b id="produccionProxima">-</b> oro/min
+
+      <div id="referralInfo" class="card">
+        <h3>👥 Sistema de Referidos</h3>
+        <p>Comparte tu enlace de invitación:</p>
+        <input type="text" id="referralLink" readonly />
+        <button class="btn btn-secondary" onclick="copiarReferral()">
+          Copiar Enlace
+        </button>
+        <p id="referralProgress"></p>
       </div>
-      <p
-        class="mensaje"
-        id="notaNivelMax"
-        style="font-size: 0.8rem; color: #d8c69a"
-      ></p>
     </div>
 
-    <div class="card">
-      <p class="subtitulo">Tu link de referidos</p>
-      <input id="linkReferido" readonly onclick="this.select()" />
-      <p class="mensaje" style="font-size: 0.85rem; color: #d8c69a">
-        Cuando alguien se registra con tu link y acumula 5 minutos activo dentro
-        del juego, vos ganás +1 pirata y esa persona +100 oro.
-      </p>
-      <button id="btnCopiar" type="button">Copiar link</button>
-    </div>
-
-    <div class="card">
-      <p>
-        <a class="link" href="/perfil.html"
-          >Ver ficha del capitán (barco completo) →</a
-        >
-      </p>
-      <p><a class="link" href="/pvp.html">⚔️ Combate PvP →</a></p>
-      <button id="btnLogout" type="button">Cerrar sesión</button>
-    </div>
-
-    <script src="/js/heartbeat.js"></script>
-    <script>
-      let usuario = null;
-      let produccion = null;
-
-      async function cargarUsuario() {
-        const res = await fetch("/api/auth/me");
-        if (!res.ok) {
-          window.location.href = "/login.html";
-          return;
-        }
-        const data = await res.json();
-        usuario = data.user;
-        produccion = data.produccion;
-        pintarUsuario();
-      }
-
-      function pintarUsuario() {
-        document.getElementById("emailUsuario").textContent = usuario.email;
-        document.getElementById("nivelJugador").textContent = usuario.nivel;
-        document.getElementById("oro").textContent = Number(
-          usuario.oro
-        ).toFixed(2);
-        document.getElementById("piratas").textContent = usuario.piratas;
-
-        if (produccion) {
-          document.getElementById("produccionActual").textContent =
-            produccion.oroPorMinuto.toFixed(2);
-          document.getElementById("proximoNivelNum").textContent =
-            produccion.proximoNivel;
-          document.getElementById("produccionProxima").textContent =
-            produccion.oroPorMinutoProximoNivel.toFixed(2);
-          document.getElementById("notaNivelMax").textContent =
-            produccion.esNivelMaximo ? "Ya estás en el nivel máximo (100)" : "";
-        }
-
-        const link = `${window.location.origin}/register.html?ref=${usuario.id}`;
-        document.getElementById("linkReferido").value = link;
-
-        const estado = document.getElementById("estadoReferido");
-        if (usuario.referredBy && !usuario.referralRewarded) {
-          const faltan = Math.max(0, 300 - usuario.activeSeconds);
-          estado.textContent = `Fuiste referido — faltan ~${Math.ceil(
-            faltan / 60
-          )} min activo para acreditar la recompensa`;
-          estado.className = "mensaje";
-        } else if (usuario.referredBy && usuario.referralRewarded) {
-          estado.textContent = "✔ Referido acreditado";
-          estado.classList.add("ok");
-        } else {
-          estado.textContent = "";
-        }
-      }
-
-      document.getElementById("btnCopiar").addEventListener("click", () => {
-        const input = document.getElementById("linkReferido");
-        input.select();
-        navigator.clipboard.writeText(input.value);
-      });
-
-      document
-        .getElementById("btnLogout")
-        .addEventListener("click", async () => {
-          await fetch("/api/auth/logout", { method: "POST" });
-          window.location.href = "/login.html";
-        });
-
-      cargarUsuario().then(() => {
-        iniciarHeartbeat((data) => {
-          if (!usuario) {
-            console.log("no user");
-            return;
-          }
-          usuario.oro = data.oro;
-          usuario.piratas = data.piratas;
-          usuario.activeSeconds = data.activeSeconds;
-          if (data.referidoAcreditado) usuario.referralRewarded = true;
-          if (data.produccion) produccion = data.produccion;
-          pintarUsuario();
-        });
-      });
-    </script>
+    <script src="/js/api.js"></script>
+    <script src="/js/dashboard.js"></script>
   </body>
 </html>

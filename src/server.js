@@ -12,15 +12,12 @@ const repairRoutes = require('./routes/repair');
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Inicializar base de datos al arrancar
+// Inicializar base de datos
 initDatabase();
 
 app.use(express.json());
 
-// Sesiones (email/password, sin Google login).
-// NOTA: MemoryStore es para desarrollo. En producción conviene un
-// store persistente (ej. connect-sqlite3) para no perder sesiones
-// al reiniciar el server.
+// Configuración de sesiones
 app.use(session({
   name: 'connect.sid',
   secret: process.env.SESSION_SECRET || 'piratas-del-caribe-dev-secret-cambiar-en-produccion',
@@ -32,6 +29,7 @@ app.use(session({
   }
 }));
 
+// Rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/profile', profileRoutes);
@@ -39,10 +37,10 @@ app.use('/api/level', levelRoutes);
 app.use('/api/pvp', pvpRoutes);
 app.use('/api/repair', repairRoutes);
 
-// Servir archivos estáticos (páginas del juego)
+// Archivos estáticos (páginas del juego)
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Ruta de salud / diagnóstico: confirma que server + DB están OK
+// Ruta de estado
 app.get('/api/status', (req, res) => {
   const row = db.prepare('SELECT valor, actualizado_en FROM server_info WHERE clave = ?').get('estado');
   res.json({

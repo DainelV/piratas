@@ -1,464 +1,242 @@
-/* ============================================================
-   ESTILO PIRATA — RESPONSIVE CON BARRA DE NAVEGACIÓN INFERIOR
-   ============================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-   @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=MedievalSharp&display=swap');
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a0a0a 0%, #2d1810 50%, #1a0a0a 100%);
+  color: #f0e6d3;
+  min-height: 100vh;
+}
 
-   /* ---------- RESET Y BASE ---------- */
-   * {
-     margin: 0;
-     padding: 0;
-     box-sizing: border-box;
-   }
-   
-   html {
-     font-size: 16px;
-   }
-   
-   body {
-     font-family: 'Pirata One', 'MedievalSharp', cursive, serif;
-     background-color: #0a0a0a;
-     color: #f0e6d3;
-     min-height: 100vh;
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     padding: 1rem 1rem 6rem; /* Espacio inferior para la barra */
-     background-image: url('https://cdn.pixabay.com/photo/2025/03/13/10/35/pirate-ship-9467827_960_720.jpg');
-     background-size: cover;
-     background-position: center bottom;
-     background-attachment: fixed;
-     background-repeat: no-repeat;
-     position: relative;
-   }
-   
-   /* Capa oscura para legibilidad */
-   body::before {
-     content: '';
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background: rgba(10, 8, 6, 0.70);
-     background-image: radial-gradient(circle at 20% 30%, rgba(60, 40, 20, 0.3) 0%, transparent 60%);
-     z-index: 0;
-     pointer-events: none;
-   }
-   
-   /* ---------- CONTENEDOR PRINCIPAL ---------- */
-   body > * {
-     position: relative;
-     z-index: 1;
-     width: 100%;
-     max-width: 800px;
-   }
-   
-   /* ---------- ENCABEZADOS ---------- */
-   h1 {
-     font-size: clamp(2rem, 8vw, 3.6rem);
-     text-align: center;
-     padding-top: 0.8rem;
-     margin-bottom: 0.2rem;
-     color: #e6c87c;
-     text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 2px 4px #000, 0 0 30px rgba(180, 120, 30, 0.3);
-     letter-spacing: 2px;
-     word-break: break-word;
-   }
-   
-   h1::before {
-     content: '☠ ';
-     font-size: 0.8em;
-   }
-   h1::after {
-     content: ' ☠';
-     font-size: 0.8em;
-   }
-   
-   .subtitulo {
-     text-align: center;
-     font-size: clamp(1rem, 3vw, 1.6rem);
-     color: #d4c3a0;
-     text-shadow: 0 2px 6px #000;
-     margin-bottom: 1.5rem;
-     font-family: 'MedievalSharp', cursive;
-     letter-spacing: 0.5px;
-   }
-   
-   #emailUsuario {
-     font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-     color: #bfa77a;
-     font-style: italic;
-   }
-   
-   /* ---------- TARJETAS ---------- */
-   .card {
-     width: 100%;
-     margin: 1.2rem auto;
-     padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
-     background: rgba(42, 32, 22, 0.85);
-     background-image: repeating-linear-gradient(45deg, rgba(80, 60, 40, 0.1) 0px, rgba(80, 60, 40, 0.1) 2px, 
-                                 transparent 2px, transparent 6px);
-     border: 2px solid #7a5f3a;
-     border-radius: 18px 4px 18px 4px;
-     box-shadow: 0 8px 32px rgba(0,0,0,0.8), inset 0 0 0 1px #b8955a, inset 0 0 20px rgba(0,0,0,0.5);
-     backdrop-filter: blur(3px);
-     transition: transform 0.2s ease, box-shadow 0.2s ease;
-   }
-   
-   .card:hover {
-     transform: scale(1.005);
-     box-shadow: 0 8px 40px rgba(0,0,0,0.9), 0 0 15px rgba(180, 130, 50, 0.2);
-   }
-   
-   .card .subtitulo {
-     font-size: clamp(1.3rem, 4vw, 2rem);
-     color: #e6c87c;
-     text-align: center;
-     margin-top: -0.3rem;
-     margin-bottom: 1rem;
-     font-family: 'Pirata One', cursive;
-     text-shadow: 0 2px 0 #3a2a1a;
-     border-bottom: 1px solid #7a5f3a;
-     padding-bottom: 0.5rem;
-   }
-   
-   /* Decoración de ancla en subtítulos (solo desktop) */
-   @media (min-width: 769px) {
-     .card .subtitulo::before {
-       content: '⚓ ';
-       font-size: 1.2rem;
-     }
-     .card .subtitulo::after {
-       content: ' ⚓';
-       font-size: 1.2rem;
-     }
-   }
-   
-   /* Olas decorativas al final de cada tarjeta (solo desktop) */
-   @media (min-width: 769px) {
-     .card::after {
-       content: '~ ~ ~';
-       display: block;
-       text-align: center;
-       font-size: 0.8rem;
-       color: #5a7a8a;
-       margin-top: 1rem;
-       letter-spacing: 8px;
-       opacity: 0.4;
-     }
-   }
-   
-   /* ---------- ESTADÍSTICAS ---------- */
-   .stat {
-     font-size: clamp(1rem, 3vw, 1.6rem);
-     padding: 0.3rem 0;
-     display: flex;
-     align-items: center;
-     gap: 0.5rem;
-     flex-wrap: wrap;
-     border-bottom: 1px dashed rgba(120, 90, 60, 0.4);
-   }
-   
-   .stat:last-of-type {
-     border-bottom: none;
-   }
-   
-   .stat b {
-     color: #e6c87c;
-     font-weight: normal;
-     font-size: clamp(1.1rem, 3.2vw, 1.7rem);
-     margin-left: 0.2rem;
-     text-shadow: 0 0 8px rgba(200, 160, 60, 0.3);
-   }
-   
-   .stat span {
-     color: #d4c3a0;
-   }
-   
-   /* ---------- MENSAJES ---------- */
-   .mensaje {
-     font-size: clamp(0.85rem, 2.2vw, 1.2rem);
-     color: #b8a58a;
-     margin-top: 0.6rem;
-     padding: 0.4rem 0.8rem;
-     background: rgba(0,0,0,0.3);
-     border-left: 4px solid #b8955a;
-     border-radius: 0 6px 6px 0;
-     font-family: 'MedievalSharp', cursive;
-     word-break: break-word;
-   }
-   
-   .mensaje.ok {
-     color: #8bc34a;
-     border-left-color: #8bc34a;
-   }
-   
-   /* ---------- INPUT (LINK DE REFERIDOS) ---------- */
-   #linkReferido {
-     width: 100%;
-     padding: clamp(0.5rem, 1.5vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
-     margin: 0.5rem 0 0.8rem 0;
-     background: rgba(30, 22, 14, 0.8);
-     border: 1px solid #7a5f3a;
-     border-radius: 30px;
-     color: #f0e6d3;
-     font-size: clamp(0.8rem, 2vw, 1.1rem);
-     font-family: 'MedievalSharp', cursive;
-     box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
-     cursor: pointer;
-     transition: border-color 0.3s;
-   }
-   
-   #linkReferido:focus {
-     outline: none;
-     border-color: #e6c87c;
-     box-shadow: 0 0 12px rgba(200, 160, 60, 0.3), inset 0 0 8px rgba(0,0,0,0.6);
-   }
-   
-   /* ---------- BOTONES ---------- */
-   button {
-     display: inline-block;
-     padding: clamp(0.4rem, 1.5vw, 0.8rem) clamp(1rem, 4vw, 2.2rem);
-     margin: 0.3rem 0.2rem 0 0;
-     background: #3d2c1b;
-     background-image: linear-gradient(145deg, #5a4028, #2d1f12);
-     border: 2px solid #7a5f3a;
-     border-radius: 40px 8px 40px 8px;
-     color: #e6c87c;
-     font-family: 'Pirata One', cursive;
-     font-size: clamp(0.9rem, 2.5vw, 1.4rem);
-     letter-spacing: 0.5px;
-     text-shadow: 0 1px 0 #000;
-     box-shadow: 0 4px 0 #1f150b, 0 6px 12px rgba(0,0,0,0.5);
-     cursor: pointer;
-     transition: all 0.1s ease;
-     width: auto;
-     min-width: 120px;
-   }
-   
-   button:hover {
-     transform: translateY(-2px);
-     box-shadow: 0 6px 0 #1f150b, 0 10px 20px rgba(0,0,0,0.7);
-     background-image: linear-gradient(145deg, #6a4f32, #3d2c1b);
-     color: #f5e6d3;
-   }
-   
-   button:active {
-     transform: translateY(4px);
-     box-shadow: 0 0px 0 #1f150b, 0 2px 8px rgba(0,0,0,0.5);
-   }
-   
-   #btnLogout {
-     background: #3d1f1a;
-     background-image: linear-gradient(145deg, #5a2e26, #2d1410);
-     border-color: #7a3a2a;
-     color: #d4a090;
-   }
-   
-   #btnLogout:hover {
-     background-image: linear-gradient(145deg, #6a3a30, #3d1f1a);
-     color: #f0d0c0;
-   }
-   
-   /* Botones en móvil ocupan todo el ancho */
-   @media (max-width: 480px) {
-     button {
-       width: 100%;
-       min-width: unset;
-       justify-content: center;
-       text-align: center;
-     }
-     .card .stat {
-       flex-wrap: wrap;
-     }
-   }
-   
-   /* ---------- ENLACES ---------- */
-   a.link {
-     color: #e6c87c;
-     text-decoration: none;
-     border-bottom: 2px dotted #7a5f3a;
-     font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-     transition: color 0.2s, border-color 0.2s;
-     word-break: break-word;
-   }
-   
-   a.link:hover {
-     color: #f5e6d3;
-     border-bottom-color: #e6c87c;
-   }
-   
-   /* ---------- RESPONSIVE: TABLETS Y MÓVILES ---------- */
-   @media (max-width: 768px) {
-     body {
-       padding: 0.8rem 0.8rem 5rem; /* Ajuste para la barra */
-       background-attachment: scroll;
-     }
-     .card {
-       margin: 0.8rem auto;
-       border-radius: 12px 2px 12px 2px;
-     }
-     h1 {
-       padding-top: 0.4rem;
-     }
-   }
-   
-   @media (max-width: 480px) {
-     html {
-       font-size: 15px;
-     }
-     body {
-       padding: 0.5rem 0.5rem 4.5rem;
-     }
-     .card {
-       padding: 0.8rem 0.8rem;
-     }
-     .stat {
-       font-size: 1rem;
-       gap: 0.3rem;
-     }
-     .stat b {
-       font-size: 1.1rem;
-     }
-     #linkReferido {
-       font-size: 0.85rem;
-       padding: 0.5rem 0.7rem;
-     }
-     .mensaje {
-       font-size: 0.8rem;
-       padding: 0.3rem 0.5rem;
-     }
-   }
-   
-   /* ---------- BARRA DE NAVEGACIÓN INFERIOR (PIRATA) ---------- */
-   .bottom-nav {
-     position: fixed;
-     bottom: 0;
-     left: 0;
-     width: 100%;
-     display: flex;
-     justify-content: space-around;
-     align-items: center;
-     background: rgba(30, 22, 14, 0.95);
-     background-image: repeating-linear-gradient(45deg, rgba(80, 60, 40, 0.15) 0px, rgba(80, 60, 40, 0.15) 2px, 
-                                 transparent 2px, transparent 6px);
-     border-top: 3px solid #7a5f3a;
-     box-shadow: 0 -6px 20px rgba(0,0,0,0.9), inset 0 1px 0 #b8955a;
-     backdrop-filter: blur(5px);
-     padding: 0.4rem 0.2rem;
-     z-index: 999;
-     height: 60px; /* altura fija */
-   }
-   
-   .nav-item {
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     justify-content: center;
-     text-decoration: none;
-     color: #b8a58a;
-     font-family: 'MedievalSharp', cursive;
-     font-size: 0.65rem;
-     transition: all 0.2s ease;
-     padding: 0.2rem 0.5rem;
-     border-radius: 8px;
-     flex: 1;
-     text-align: center;
-     position: relative;
-   }
-   
-   .nav-icon {
-     font-size: 1.6rem;
-     line-height: 1.2;
-     transition: transform 0.2s;
-   }
-   
-   .nav-label {
-     font-size: 0.6rem;
-     letter-spacing: 0.5px;
-     margin-top: 0.1rem;
-     color: #b8a58a;
-     text-shadow: 0 1px 2px #000;
-   }
-   
-   /* Elemento activo */
-   .nav-item.active .nav-icon {
-     transform: scale(1.15);
-     text-shadow: 0 0 15px rgba(200, 160, 60, 0.6);
-   }
-   .nav-item.active .nav-label {
-     color: #e6c87c;
-     font-weight: bold;
-   }
-   .nav-item.active::after {
-     content: '';
-     position: absolute;
-     bottom: -2px;
-     left: 20%;
-     width: 60%;
-     height: 3px;
-     background: #e6c87c;
-     border-radius: 10px;
-     box-shadow: 0 0 12px #e6c87c;
-   }
-   
-   /* Hover */
-   .nav-item:hover {
-     color: #f0e6d3;
-   }
-   .nav-item:hover .nav-label {
-     color: #f0e6d3;
-   }
-   .nav-item:hover .nav-icon {
-     transform: scale(1.1);
-   }
-   
-   /* Ajuste para móviles */
-   @media (max-width: 480px) {
-     .bottom-nav {
-       height: 56px;
-       padding: 0.2rem 0;
-     }
-     .nav-icon {
-       font-size: 1.4rem;
-     }
-     .nav-label {
-       font-size: 0.5rem;
-     }
-     .nav-item {
-       padding: 0.1rem 0.2rem;
-     }
-   }
-   
-   @media (max-width: 380px) {
-     .nav-icon {
-       font-size: 1.2rem;
-     }
-     .nav-label {
-       font-size: 0.45rem;
-     }
-     .bottom-nav {
-       height: 50px;
-     }
-   }
-   
-   /* ---------- SCROLLBAR PIRATA ---------- */
-   ::-webkit-scrollbar {
-     width: 8px;
-     background: #1a1410;
-   }
-   ::-webkit-scrollbar-track {
-     background: #2a1f18;
-     border-left: 1px solid #4a3a2a;
-   }
-   ::-webkit-scrollbar-thumb {
-     background: #7a5f3a;
-     border-radius: 10px;
-     border: 1px solid #b8955a;
-   }
-   ::-webkit-scrollbar-thumb:hover {
-     background: #b8955a;
-   }
-   
-   /* ---------- FIN ---------- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  color: #f4c542;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: #f4c542;
+  margin-bottom: 10px;
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: #f0e6d3;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+nav a:hover {
+  background: rgba(244, 197, 66, 0.2);
+}
+
+.btn {
+  display: inline-block;
+  background: #f4c542;
+  color: #1a0a0a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  background: #e6b83a;
+}
+
+.btn-secondary {
+  background: #8b6b4a;
+  color: #f0e6d3;
+}
+
+.btn-secondary:hover {
+  background: #7a5d3f;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.feature {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #8b6b4a;
+  text-align: center;
+}
+
+.feature h3 {
+  color: #f4c542;
+  margin-bottom: 10px;
+}
+
+.card {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #8b6b4a;
+  margin-bottom: 20px;
+}
+
+.dashboard-grid,
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #8b6b4a;
+  background: rgba(0, 0, 0, 0.4);
+  color: #f0e6d3;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #f4c542;
+}
+
+.error {
+  color: #ff6b6b;
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.success {
+  color: #51cf66;
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(0, 255, 0, 0.1);
+  border-radius: 5px;
+}
+
+.enemigo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #8b6b4a;
+  flex-wrap: wrap;
+}
+
+.enemigo-item:last-child {
+  border-bottom: none;
+}
+
+.enemigo-info {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.enemigo-info span {
+  margin-right: 10px;
+}
+
+.bar {
+  width: 100%;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 5px 0;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #f4c542;
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+
+.bar-fill.hp-bar {
+  background: #ff6b6b;
+}
+
+.bar-fill.hp-bar.good {
+  background: #51cf66;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid,
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .enemigo-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .enemigo-info {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  nav {
+    flex-direction: column;
+    align-items: center;
+  }
+}
