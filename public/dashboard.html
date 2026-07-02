@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi barco — Piratas del Caribe</title>
+    <link rel="stylesheet" href="/css/estilo.css" />
+  </head>
+  <body>
+    <h1>🏴‍☠️ Bienvenido, capitán</h1>
+    <p class="subtitulo" id="emailUsuario"></p>
+
+    <div class="card">
+      <div class="stat">🎖️ Nivel <b id="nivelJugador">1</b> / 100</div>
+      <div class="stat">🪙 Oro: <b id="oro">0</b></div>
+      <div class="stat">🧑‍🦱 Piratas: <b id="piratas">0</b></div>
+      <p id="estadoReferido" class="mensaje"></p>
+    </div>
+
+    <div class="card">
+      <p class="subtitulo">Producción de oro</p>
+      <div class="stat" style="font-size: 1rem">
+        Actual: <b id="produccionActual">-</b> oro/min
+      </div>
+      <div class="stat" style="font-size: 1rem">
+        Próximo nivel (<span id="proximoNivelNum">-</span>):
+        <b id="produccionProxima">-</b> oro/min
+      </div>
+      <p
+        class="mensaje"
+        id="notaNivelMax"
+        style="font-size: 0.8rem; color: #d8c69a"
+      ></p>
+    </div>
+
+    <div class="card">
+      <p class="subtitulo">Tu link de referidos</p>
+      <input id="linkReferido" readonly onclick="this.select()" />
+      <p class="mensaje" style="font-size: 0.85rem; color: #d8c69a">
+        Cuando alguien se registra con tu link y acumula 5 minutos activo dentro
+        del juego, vos ganás +1 pirata y esa persona +100 oro.
+      </p>
+      <button id="btnCopiar" type="button">Copiar link</button>
+    </div>
+
+    <div class="card">
+      <p>
+        <a class="link" href="/perfil.html"
+          >Ver ficha del capitán (barco completo) →</a
+        >
+      </p>
+      <p><a class="link" href="/pvp.html">⚔️ Combate PvP →</a></p>
+      <button id="btnLogout" type="button">Cerrar sesión</button>
+    </div>
+
+    <!-- Barra de navegación inferior -->
+    <nav class="bottom-nav">
+      <a href="/dashboard" class="nav-item active">
+        <span class="nav-icon">🏴‍☠️</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="/perfil" class="nav-item">
+        <span class="nav-icon">🧑‍✈️</span>
+        <span class="nav-label">Perfil</span>
+      </a>
+      <a href="/pvp" class="nav-item">
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-label">PVP</span>
+      </a>
+    </nav>
+
+    <script src="/js/heartbeat.js"></script>
+    <script>
+      let usuario = null;
+      let produccion = null;
+
+      async function cargarUsuario() {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          window.location.href = "/login.html";
+          return;
+        }
+        const data = await res.json();
+        usuario = data.user;
+        produccion = data.produccion;
+        pintarUsuario();
+      }
+
+      function pintarUsuario() {
+        document.getElementById("emailUsuario").textContent = usuario.email;
+        document.getElementById("nivelJugador").textContent = usuario.nivel;
+        document.getElementById("oro").textContent = Number(
+          usuario.oro
+        ).toFixed(2);
+        document.getElementById("piratas").textContent = usuario.piratas;
+
+        if (produccion) {
+          document.getElementById("produccionActual").textContent =
+            produccion.oroPorMinuto.toFixed(2);
+          document.getElementById("proximoNivelNum").textContent =
+            produccion.proximoNivel;
+          document.getElementById("produccionProxima").textContent =
+            produccion.oroPorMinutoProximoNivel.toFixed(2);
+          document.getElementById("notaNivelMax").textContent =
+            produccion.esNivelMaximo ? "Ya estás en el nivel máximo (100)" : "";
+        }
+
+        const link = `${window.location.origin}/register.html?ref=${usuario.id}`;
+        document.getElementById("linkReferido").value = link;
+
+        const estado = document.getElementById("estadoReferido");
+        if (usuario.referredBy && !usuario.referralRewarded) {
+          const faltan = Math.max(0, 300 - usuario.activeSeconds);
+          estado.textContent = `Fuiste referido — faltan ~${Math.ceil(
+            faltan / 60
+          )} min activo para acreditar la recompensa`;
+          estado.className = "mensaje";
+        } else if (usuario.referredBy && usuario.referralRewarded) {
+          estado.textContent = "✔ Referido acreditado";
+          estado.classList.add("ok");
+        } else {
+          estado.textContent = "";
+        }
+      }
+
+      document.getElementById("btnCopiar").addEventListener("click", () => {
+        const input = document.getElementById("linkReferido");
+        input.select();
+        navigator.clipboard.writeText(input.value);
+      });
+
+      document
+        .getElementById("btnLogout")
+        .addEventListener("click", async () => {
+          await fetch("/api/auth/logout", { method: "POST" });
+          window.location.href = "/login.html";
+        });
+
+      cargarUsuario().then(() => {
+        iniciarHeartbeat((data) => {
+          if (!usuario) return;
+          usuario.oro = data.oro;
+          usuario.piratas = data.piratas;
+          usuario.activeSeconds = data.activeSeconds;
+          if (data.referidoAcreditado) usuario.referralRewarded = true;
+          if (data.produccion) produccion = data.produccion;
+          pintarUsuario();
+        });
+      });
+    </script>
+  </body>
+</html>
