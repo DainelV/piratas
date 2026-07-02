@@ -2,7 +2,7 @@ const { db } = require('../db/database');
 const { capacidadBarco } = require('./economia');
 
 // Nivel 1 = 0.01 oro/min. Escala linealmente con el nivel del barco.
-const ORO_POR_MINUTO_POR_NIVEL = 0.01;
+const ORO_POR_MINUTO_POR_NIVEL = 10;
 const NIVEL_MAXIMO = 100;
 
 /**
@@ -26,7 +26,9 @@ function produccionPorMinuto(nivel) {
  */
 function aplicarProduccion(userId) {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-  if (!user) return null;
+  if (!user) {
+    console.log("no user prod")
+    return null;}
 
   const ahora = new Date();
   const ultima = user.last_production_at ? new Date(user.last_production_at) : ahora;

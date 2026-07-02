@@ -24,6 +24,7 @@ const MAX_INCREMENT_PER_TICK = 30; // tope por heartbeat, para evitar trampas
 router.post('/heartbeat', requireAuth, (req, res) => {
   let user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
   if (!user) {
+    console.log("no user")
     return res.status(401).json({ error: 'No autenticado' });
   }
 

@@ -5,15 +5,23 @@
  * sigue sumando desde donde quedó).
  */
 function iniciarHeartbeat(onUpdate) {
-  const INTERVALO_MS = 20000;
+  const INTERVALO_MS = 5000;
 
   async function latido() {
-    if (document.visibilityState !== 'visible') return;
+    if (false) return;
     try {
+      console.log("heartbeat")
       const res = await fetch('/api/activity/heartbeat', { method: 'POST' });
-      if (!res.ok) return;
+      if (!res.ok) 
+      {
+        console.log("res not ok")
+        return;
+      }
+      console.log("res ok")
       const data = await res.json();
-      if (onUpdate) onUpdate(data);
+      if (onUpdate) 
+      {console.log("on update")
+        onUpdate(data);}
     } catch (err) {
       // silencioso: si falla un heartbeat, probamos de nuevo en el próximo tick
     }

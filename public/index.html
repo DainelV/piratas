@@ -1,37 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Piratas del Caribe</title>
-  <link rel="stylesheet" href="/css/estilo.css" />
-</head>
-<body>
-  <h1>🏴‍☠️ Piratas del Caribe</h1>
-  <p class="subtitulo">Servidor base — Pasos 1 y 2</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Piratas del Caribe</title>
+    <link rel="stylesheet" href="/css/estilo.css" />
+  </head>
+  <body>
+    <h1>🏴‍☠️ Piratas del Caribe</h1>
+    <p class="subtitulo">Servidor base — Pasos 1 y 2</p>
 
-  <div class="card">
-    <p id="estado">Consultando servidor...</p>
-    <a class="link" href="/login.html">Iniciar sesión</a> ·
-    <a class="link" href="/register.html">Registrarse</a>
-  </div>
+    <div class="card">
+      <p id="estado">Consultando servidor...</p>
+      <a class="link" href="/login.html">Iniciar sesión</a> ·
+      <a class="link" href="/register.html">Registrarse</a>
+    </div>
 
-  <script>
-    fetch('/api/status')
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('estado').innerHTML =
-          `<span class="ok">✔ Servidor: ${data.servidor}</span>`;
-      })
-      .catch(() => {
-        document.getElementById('estado').innerHTML =
-          '<span class="error">✘ No se pudo conectar al servidor</span>';
+    <script>
+      fetch("/api/status")
+        .then((r) => r.json())
+        .then((data) => {
+          document.getElementById(
+            "estado"
+          ).innerHTML = `<span class="ok">✔ Servidor: ${data.servidor}</span>`;
+        })
+        .catch(() => {
+          document.getElementById("estado").innerHTML =
+            '<span class="error">✘ No se pudo conectar al servidor</span>';
+        });
+
+      // Si ya hay sesión activa, mandamos directo al dashboard
+      fetch("/api/auth/me").then((r) => {
+        if (r.ok) window.location.href = "/dashboard.html";
       });
-
-    // Si ya hay sesión activa, mandamos directo al dashboard
-    fetch('/api/auth/me').then(r => {
-      if (r.ok) window.location.href = '/dashboard.html';
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

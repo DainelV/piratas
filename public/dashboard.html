@@ -53,22 +53,6 @@
       <button id="btnLogout" type="button">Cerrar sesión</button>
     </div>
 
-    <!-- Barra de navegación inferior -->
-    <nav class="bottom-nav">
-      <a href="/dashboard" class="nav-item active">
-        <span class="nav-icon">🏴‍☠️</span>
-        <span class="nav-label">Dashboard</span>
-      </a>
-      <a href="/perfil" class="nav-item">
-        <span class="nav-icon">🧑‍✈️</span>
-        <span class="nav-label">Perfil</span>
-      </a>
-      <a href="/pvp" class="nav-item">
-        <span class="nav-icon">⚔️</span>
-        <span class="nav-label">PVP</span>
-      </a>
-    </nav>
-
     <script src="/js/heartbeat.js"></script>
     <script>
       let usuario = null;
@@ -138,7 +122,10 @@
 
       cargarUsuario().then(() => {
         iniciarHeartbeat((data) => {
-          if (!usuario) return;
+          if (!usuario) {
+            console.log("no user");
+            return;
+          }
           usuario.oro = data.oro;
           usuario.piratas = data.piratas;
           usuario.activeSeconds = data.activeSeconds;

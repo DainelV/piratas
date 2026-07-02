@@ -1,253 +1,292 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi perfil — Piratas del Caribe</title>
-  <link rel="stylesheet" href="/css/estilo.css" />
-  <style>
-    .barco {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.8rem;
-      text-align: left;
-      margin-top: 0.5rem;
-    }
-    .pieza {
-      background: rgba(0,0,0,0.2);
-      border: 1px solid #d8c69a33;
-      border-radius: 8px;
-      padding: 0.7rem;
-    }
-    .pieza .etiqueta { font-size: 0.8rem; color: #d8c69a; }
-    .pieza .valor { font-size: 1.3rem; font-weight: bold; color: #ffe08a; }
-    .barra-hp {
-      width: 100%;
-      height: 14px;
-      background: #0e2a44;
-      border-radius: 7px;
-      overflow: hidden;
-      margin-top: 0.4rem;
-      border: 1px solid #d8c69a55;
-    }
-    .barra-hp-relleno {
-      height: 100%;
-      background: linear-gradient(90deg, #7fdc8f, #4fae63);
-    }
-  </style>
-</head>
-<body>
-  <h1>🧭 Ficha del capitán</h1>
-  <p class="subtitulo" id="emailUsuario"></p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi perfil — Piratas del Caribe</title>
+    <link rel="stylesheet" href="/css/estilo.css" />
+    <style>
+      .barco {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+        text-align: left;
+        margin-top: 0.5rem;
+      }
+      .pieza {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid #d8c69a33;
+        border-radius: 8px;
+        padding: 0.7rem;
+      }
+      .pieza .etiqueta {
+        font-size: 0.8rem;
+        color: #d8c69a;
+      }
+      .pieza .valor {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #ffe08a;
+      }
+      .barra-hp {
+        width: 100%;
+        height: 14px;
+        background: #0e2a44;
+        border-radius: 7px;
+        overflow: hidden;
+        margin-top: 0.4rem;
+        border: 1px solid #d8c69a55;
+      }
+      .barra-hp-relleno {
+        height: 100%;
+        background: linear-gradient(90deg, #7fdc8f, #4fae63);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧭 Ficha del capitán</h1>
+    <p class="subtitulo" id="emailUsuario"></p>
 
-  <div class="card">
-    <div class="stat">Nivel <b id="nivel">1</b> / 100</div>
+    <div class="card">
+      <div class="stat">Nivel <b id="nivel">1</b> / 100</div>
 
-    <div style="text-align:left; margin-top:0.6rem;">
-      <span class="etiqueta" style="font-size:0.85rem; color:#d8c69a;">HP</span>
-      <div class="barra-hp"><div class="barra-hp-relleno" id="barraHp" style="width:100%"></div></div>
-      <span id="hpTexto" style="font-size:0.85rem;"></span>
+      <div style="text-align: left; margin-top: 0.6rem">
+        <span class="etiqueta" style="font-size: 0.85rem; color: #d8c69a"
+          >HP</span
+        >
+        <div class="barra-hp">
+          <div class="barra-hp-relleno" id="barraHp" style="width: 100%"></div>
+        </div>
+        <span id="hpTexto" style="font-size: 0.85rem"></span>
+      </div>
+
+      <div class="barco">
+        <div class="pieza">
+          <div class="etiqueta">🪙 Oro</div>
+          <div class="valor" id="oro">0</div>
+        </div>
+        <div class="pieza">
+          <div class="etiqueta">🧑‍🦱 Piratas (referidos)</div>
+          <div class="valor" id="piratas">0</div>
+        </div>
+        <div class="pieza">
+          <div class="etiqueta">⛵ Velas</div>
+          <div class="valor" id="velas">1</div>
+        </div>
+        <div class="pieza">
+          <div class="etiqueta">💣 Cañones</div>
+          <div class="valor" id="canones">1</div>
+        </div>
+        <div class="pieza" style="grid-column: span 2">
+          <div class="etiqueta">🚢 Casco</div>
+          <div class="valor" id="casco">1</div>
+        </div>
+        <div class="pieza">
+          <div class="etiqueta">⚙️ Producción actual</div>
+          <div class="valor" id="produccionActual">-</div>
+          <div class="etiqueta">oro/min</div>
+        </div>
+        <div class="pieza">
+          <div class="etiqueta">
+            ⬆️ Producción nivel <span id="proximoNivelNum">-</span>
+          </div>
+          <div class="valor" id="produccionProxima">-</div>
+          <div class="etiqueta">oro/min</div>
+        </div>
+      </div>
     </div>
 
-    <div class="barco">
-      <div class="pieza">
-        <div class="etiqueta">🪙 Oro</div>
-        <div class="valor" id="oro">0</div>
-      </div>
-      <div class="pieza">
-        <div class="etiqueta">🧑‍🦱 Piratas (referidos)</div>
-        <div class="valor" id="piratas">0</div>
-      </div>
-      <div class="pieza">
-        <div class="etiqueta">⛵ Velas</div>
-        <div class="valor" id="velas">1</div>
-      </div>
-      <div class="pieza">
-        <div class="etiqueta">💣 Cañones</div>
-        <div class="valor" id="canones">1</div>
-      </div>
-      <div class="pieza" style="grid-column: span 2;">
-        <div class="etiqueta">🚢 Casco</div>
-        <div class="valor" id="casco">1</div>
-      </div>
-      <div class="pieza">
-        <div class="etiqueta">⚙️ Producción actual</div>
-        <div class="valor" id="produccionActual">-</div>
-        <div class="etiqueta">oro/min</div>
-      </div>
-      <div class="pieza">
-        <div class="etiqueta">⬆️ Producción nivel <span id="proximoNivelNum">-</span></div>
-        <div class="valor" id="produccionProxima">-</div>
-        <div class="etiqueta">oro/min</div>
-      </div>
+    <div class="card">
+      <p class="subtitulo">🪙 Capacidad de bodega</p>
+      <div class="stat"><b id="capacidadBodega">-</b> oro máx.</div>
+      <p class="mensaje" style="font-size: 0.8rem; color: #d8c69a">
+        Depende del nivel del casco
+      </p>
     </div>
-  </div>
 
-  <div class="card">
-    <p class="subtitulo">🪙 Capacidad de bodega</p>
-    <div class="stat"><b id="capacidadBodega">-</b> oro máx.</div>
-    <p class="mensaje" style="font-size:0.8rem; color:#d8c69a;">Depende del nivel del casco</p>
-  </div>
+    <div class="card">
+      <p class="subtitulo">⚔️ Historial PvP</p>
+      <div class="stat">
+        🏆 <b id="pvpVictorias">0</b> — 💀 <b id="pvpDerrotas">0</b>
+      </div>
+      <p><a class="link" href="/pvp.html">Ir a combatir →</a></p>
+    </div>
 
-  <div class="card">
-    <p class="subtitulo">⚔️ Historial PvP</p>
-    <div class="stat">🏆 <b id="pvpVictorias">0</b> — 💀 <b id="pvpDerrotas">0</b></div>
-    <p><a class="link" href="/pvp.html">Ir a combatir →</a></p>
-  </div>
+    <div class="card">
+      <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
+    </div>
 
-  <div class="card">
-    <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
-  </div>
+    <div class="card">
+      <p class="subtitulo">🚢 Nivel del barco</p>
+      <div class="stat"><b id="nivelBarco">1.00</b></div>
+      <p class="mensaje" style="font-size: 0.8rem; color: #d8c69a">
+        Promedio de velas, cañones y casco
+      </p>
+    </div>
 
-  <div class="card">
-    <p class="subtitulo">🚢 Nivel del barco</p>
-    <div class="stat"><b id="nivelBarco">1.00</b></div>
-    <p class="mensaje" style="font-size:0.8rem; color:#d8c69a;">Promedio de velas, cañones y casco</p>
-  </div>
+    <div class="card">
+      <p class="subtitulo">🔧 Reparación del barco</p>
+      <p class="mensaje" id="estadoReparacion" style="font-size: 0.9rem"></p>
+      <button id="btnReparar" type="button">Reparar a 100%</button>
+      <p class="mensaje" id="mensajeReparar"></p>
+    </div>
 
-  <div class="card">
-    <p class="subtitulo">🔧 Reparación del barco</p>
-    <p class="mensaje" id="estadoReparacion" style="font-size:0.9rem;"></p>
-    <button id="btnReparar" type="button">Reparar a 100%</button>
-    <p class="mensaje" id="mensajeReparar"></p>
-  </div>
+    <div class="card">
+      <p class="subtitulo">Subir de nivel</p>
+      <p class="mensaje" id="requisitoNivel" style="font-size: 0.9rem"></p>
+      <button id="btnSubirNivel" type="button">Subir de nivel</button>
+      <p class="mensaje" id="mensajeSubir"></p>
+    </div>
 
-  <div class="card">
-    <p class="subtitulo">Subir de nivel</p>
-    <p class="mensaje" id="requisitoNivel" style="font-size:0.9rem;"></p>
-    <button id="btnSubirNivel" type="button">Subir de nivel</button>
-    <p class="mensaje" id="mensajeSubir"></p>
-  </div>
-
-  <script>
-    async function cargarPerfil() {
-      const res = await fetch('/api/profile');
-      if (!res.ok) {
-        window.location.href = '/login.html';
-        return;
-      }
-      const data = await res.json();
-      const profile = data.profile;
-
-      document.getElementById('emailUsuario').textContent = profile.email;
-      document.getElementById('nivel').textContent = profile.nivel;
-      document.getElementById('oro').textContent = Number(profile.oro).toFixed(2);
-      document.getElementById('piratas').textContent = profile.piratas;
-      document.getElementById('velas').textContent = profile.velas;
-      document.getElementById('canones').textContent = profile.canones;
-      document.getElementById('casco').textContent = profile.casco;
-      document.getElementById('nivelBarco').textContent = profile.nivelBarco.toFixed(2);
-      document.getElementById('pvpVictorias').textContent = profile.pvpVictorias;
-      document.getElementById('pvpDerrotas').textContent = profile.pvpDerrotas;
-      if (data.capacidadBodega !== undefined) {
-        document.getElementById('capacidadBodega').textContent = data.capacidadBodega;
-      }
-
-      if (data.produccion) {
-        document.getElementById('produccionActual').textContent = data.produccion.oroPorMinuto.toFixed(2);
-        document.getElementById('proximoNivelNum').textContent = data.produccion.proximoNivel;
-        document.getElementById('produccionProxima').textContent = data.produccion.oroPorMinutoProximoNivel.toFixed(2);
-      }
-
-      const pct = Math.max(0, Math.min(100, (profile.hp / profile.hpMax) * 100));
-      document.getElementById('barraHp').style.width = pct + '%';
-      document.getElementById('hpTexto').textContent = `${profile.hp} / ${profile.hpMax} HP`;
-
-      pintarRequisitoNivel(data.nivelJugador);
-      pintarReparacion(data.reparacion);
-    }
-
-    function pintarReparacion(rep) {
-      if (!rep) return;
-      const texto = document.getElementById('estadoReparacion');
-      const boton = document.getElementById('btnReparar');
-
-      if (rep.hpFaltante <= 0) {
-        texto.textContent = 'Tu barco está al 100% de HP ✔';
-        boton.disabled = true;
-        return;
-      }
-
-      let linea = `HP: ${rep.hp}/${rep.hpMax} (${rep.porcentaje.toFixed(1)}%) — costo para reparar a 100%: ${rep.costoReparacion} oro`;
-      if (!rep.puedePelear) {
-        linea += ' — ⚠️ por debajo del 30%, no podés pelear hasta reparar';
-      }
-      texto.textContent = linea;
-      boton.disabled = false;
-    }
-
-    document.getElementById('btnReparar').addEventListener('click', async () => {
-      const mensaje = document.getElementById('mensajeReparar');
-      mensaje.textContent = '';
-      mensaje.className = 'mensaje';
-
-      try {
-        const res = await fetch('/api/repair', { method: 'POST' });
-        const data = await res.json();
-
+    <script>
+      async function cargarPerfil() {
+        const res = await fetch("/api/profile");
         if (!res.ok) {
-          mensaje.textContent = data.error || 'No se pudo reparar';
-          mensaje.classList.add('error');
+          window.location.href = "/login.html";
+          return;
+        }
+        const data = await res.json();
+        const profile = data.profile;
+
+        document.getElementById("emailUsuario").textContent = profile.email;
+        document.getElementById("nivel").textContent = profile.nivel;
+        document.getElementById("oro").textContent = Number(
+          profile.oro
+        ).toFixed(2);
+        document.getElementById("piratas").textContent = profile.piratas;
+        document.getElementById("velas").textContent = profile.velas;
+        document.getElementById("canones").textContent = profile.canones;
+        document.getElementById("casco").textContent = profile.casco;
+        document.getElementById("nivelBarco").textContent =
+          profile.nivelBarco.toFixed(2);
+        document.getElementById("pvpVictorias").textContent =
+          profile.pvpVictorias;
+        document.getElementById("pvpDerrotas").textContent =
+          profile.pvpDerrotas;
+        if (data.capacidadBodega !== undefined) {
+          document.getElementById("capacidadBodega").textContent =
+            data.capacidadBodega;
+        }
+
+        if (data.produccion) {
+          document.getElementById("produccionActual").textContent =
+            data.produccion.oroPorMinuto.toFixed(2);
+          document.getElementById("proximoNivelNum").textContent =
+            data.produccion.proximoNivel;
+          document.getElementById("produccionProxima").textContent =
+            data.produccion.oroPorMinutoProximoNivel.toFixed(2);
+        }
+
+        const pct = Math.max(
+          0,
+          Math.min(100, (profile.hp / profile.hpMax) * 100)
+        );
+        document.getElementById("barraHp").style.width = pct + "%";
+        document.getElementById(
+          "hpTexto"
+        ).textContent = `${profile.hp} / ${profile.hpMax} HP`;
+
+        pintarRequisitoNivel(data.nivelJugador);
+        pintarReparacion(data.reparacion);
+      }
+
+      function pintarReparacion(rep) {
+        if (!rep) return;
+        const texto = document.getElementById("estadoReparacion");
+        const boton = document.getElementById("btnReparar");
+
+        if (rep.hpFaltante <= 0) {
+          texto.textContent = "Tu barco está al 100% de HP ✔";
+          boton.disabled = true;
           return;
         }
 
-        mensaje.textContent = data.yaEstabaCompleto
-          ? 'Tu barco ya estaba al 100%'
-          : `Reparado por ${data.costoPagado} oro`;
-        mensaje.classList.add('ok');
-        await cargarPerfil();
-      } catch (err) {
-        mensaje.textContent = 'Error de conexión con el servidor';
-        mensaje.classList.add('error');
-      }
-    });
-
-    function pintarRequisitoNivel(info) {
-      const requisito = document.getElementById('requisitoNivel');
-      const boton = document.getElementById('btnSubirNivel');
-
-      if (!info || info.razon === 'nivel_maximo') {
-        requisito.textContent = 'Ya estás en el nivel máximo (100) 🏆';
-        boton.disabled = true;
-        return;
+        let linea = `HP: ${rep.hp}/${rep.hpMax} (${rep.porcentaje.toFixed(
+          1
+        )}%) — costo para reparar a 100%: ${rep.costoReparacion} oro`;
+        if (!rep.puedePelear) {
+          linea += " — ⚠️ por debajo del 30%, no podés pelear hasta reparar";
+        }
+        texto.textContent = linea;
+        boton.disabled = false;
       }
 
-      let texto = `Costo: ${info.costo} oro`;
-      if (info.costoReparacion > 0) {
-        texto += ` + ${info.costoReparacion} de reparación automática = ${info.costoTotal} total`;
-      }
-      if (info.referidosRequeridos > 0) {
-        texto += ` · ${info.referidosRequeridos} referido(s) activo(s)`;
-      }
-      requisito.textContent = texto;
-      boton.disabled = false;
-    }
+      document
+        .getElementById("btnReparar")
+        .addEventListener("click", async () => {
+          const mensaje = document.getElementById("mensajeReparar");
+          mensaje.textContent = "";
+          mensaje.className = "mensaje";
 
-    document.getElementById('btnSubirNivel').addEventListener('click', async () => {
-      const mensaje = document.getElementById('mensajeSubir');
-      mensaje.textContent = '';
-      mensaje.className = 'mensaje';
+          try {
+            const res = await fetch("/api/repair", { method: "POST" });
+            const data = await res.json();
 
-      try {
-        const res = await fetch('/api/level/subir', { method: 'POST' });
-        const data = await res.json();
+            if (!res.ok) {
+              mensaje.textContent = data.error || "No se pudo reparar";
+              mensaje.classList.add("error");
+              return;
+            }
 
-        if (!res.ok) {
-          mensaje.textContent = data.error || 'No se pudo subir de nivel';
-          mensaje.classList.add('error');
+            mensaje.textContent = data.yaEstabaCompleto
+              ? "Tu barco ya estaba al 100%"
+              : `Reparado por ${data.costoPagado} oro`;
+            mensaje.classList.add("ok");
+            await cargarPerfil();
+          } catch (err) {
+            mensaje.textContent = "Error de conexión con el servidor";
+            mensaje.classList.add("error");
+          }
+        });
+
+      function pintarRequisitoNivel(info) {
+        const requisito = document.getElementById("requisitoNivel");
+        const boton = document.getElementById("btnSubirNivel");
+
+        if (!info || info.razon === "nivel_maximo") {
+          requisito.textContent = "Ya estás en el nivel máximo (100) 🏆";
+          boton.disabled = true;
           return;
         }
 
-        mensaje.textContent = `¡Subiste a nivel ${data.estado.nivel}! 🎉`;
-        mensaje.classList.add('ok');
-        await cargarPerfil();
-      } catch (err) {
-        mensaje.textContent = 'Error de conexión con el servidor';
-        mensaje.classList.add('error');
+        let texto = `Costo: ${info.costo} oro`;
+        if (info.costoReparacion > 0) {
+          texto += ` + ${info.costoReparacion} de reparación automática = ${info.costoTotal} total`;
+        }
+        if (info.referidosRequeridos > 0) {
+          texto += ` · ${info.referidosRequeridos} referido(s) activo(s)`;
+        }
+        requisito.textContent = texto;
+        boton.disabled = false;
       }
-    });
 
-    cargarPerfil();
-  </script>
-</body>
+      document
+        .getElementById("btnSubirNivel")
+        .addEventListener("click", async () => {
+          const mensaje = document.getElementById("mensajeSubir");
+          mensaje.textContent = "";
+          mensaje.className = "mensaje";
+
+          try {
+            const res = await fetch("/api/level/subir", { method: "POST" });
+            const data = await res.json();
+
+            if (!res.ok) {
+              mensaje.textContent = data.error || "No se pudo subir de nivel";
+              mensaje.classList.add("error");
+              return;
+            }
+
+            mensaje.textContent = `¡Subiste a nivel ${data.estado.nivel}! 🎉`;
+            mensaje.classList.add("ok");
+            await cargarPerfil();
+          } catch (err) {
+            mensaje.textContent = "Error de conexión con el servidor";
+            mensaje.classList.add("error");
+          }
+        });
+
+      cargarPerfil();
+    </script>
+  </body>
 </html>
