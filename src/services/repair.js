@@ -1,43 +1,84 @@
 const { db } = require('../db/database');
-const { costoReparacion } = require('./economia');
 
-const PORCENTAJE_MINIMO_PARA_PELEAR = 0.30;
+// Por debajo de este % de HP, el barco no puede pelear hasta reparar.
+const PORCENTAJE_MINIMO_PARA_PELEAR = 0.3; // 30%
 
+// Costo de reparación: un PORCENTAJE del HP faltante, no 1 oro por
+// punto (eso salía carísimo al principio). Ajustable acá.
+const PORCENTAJE_COSTO_REPARACION = 0.10; // 10% del HP faltante, en oro
+
+function porcentajeHp(user) {
+  if (user.hp_max <= 0) return 0;
+  return user.hp / user.hp_max;
+}
+
+/**
+ * HP faltante hasta el 100% (nunca negativo).
+ */
+function hpFaltante(user) {
+  return Math.max(0, Math.round((user.hp_max - user.hp) * 100) / 100);
+}
+
+/**
+ * Costo en oro para reparar el barco a 100%: 10% del HP faltante.
+ * Ej: si falta 100 HP, cuesta 10 de oro (antes costaba 100).
+ */
+function costoReparacion(user) {
+  return Math.round(hpFaltante(user) * PORCENTAJE_COSTO_REPARACION * 100) / 100;
+}
+
+/**
+ * ¿Puede este barco entrar en batalla ahora mismo? Falso si su HP
+ * cayó por debajo del 30% del total.
+ */
+function puedePelear(user) {
+  return porcentajeHp(user) >= PORCENTAJE_MINIMO_PARA_PELEAR;
+}
+
+/**
+ * Estado de reparación para mostrar en pantalla.
+ */
 function estadoReparacion(user) {
-  const hpPct = user.hp / user.hp_max;
   return {
     hp: user.hp,
     hpMax: user.hp_max,
-    hpPct: Math.round(hpPct * 100),
-    puedePelear: hpPct >= PORCENTAJE_MINIMO_PARA_PELEAR,
+    porcentaje: Math.round(porcentajeHp(user) * 10000) / 100, // 0-100 con 2 decimales
+    puedePelear: puedePelear(user),
+    hpFaltante: hpFaltante(user),
     costoReparacion: costoReparacion(user)
   };
 }
 
+/**
+ * Repara el barco a 100% si el usuario tiene oro suficiente.
+ * Es una reparación completa (no parcial): o se paga todo el costo,
+ * o no se repara nada.
+ */
 function reparar(userId) {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
   if (!user) return { ok: false, razon: 'usuario_no_encontrado' };
 
-  if (user.hp >= user.hp_max) {
-    return { ok: true, yaEstabaCompleto: true, user };
-  }
-
   const costo = costoReparacion(user);
+  if (costo <= 0) {
+    return { ok: true, yaEstabaCompleto: true, costoPagado: 0, user };
+  }
   if (user.oro < costo) {
-    return { ok: false, razon: 'oro_insuficiente', costo };
+    return { ok: false, razon: 'oro_insuficiente', costo, oroActual: user.oro };
   }
 
-  db.transaction(() => {
-    db.prepare('UPDATE users SET oro = oro - ? WHERE id = ?').run(costo, userId);
-    db.prepare('UPDATE users SET hp = hp_max WHERE id = ?').run(userId);
-  })();
+  db.prepare('UPDATE users SET oro = oro - ?, hp = hp_max WHERE id = ?').run(costo, userId);
 
-  const updatedUser = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-  return { ok: true, yaEstabaCompleto: false, costoPagado: costo, user: updatedUser };
+  const actualizado = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+  return { ok: true, yaEstabaCompleto: false, costoPagado: costo, user: actualizado };
 }
 
 module.exports = {
+  PORCENTAJE_MINIMO_PARA_PELEAR,
+  PORCENTAJE_COSTO_REPARACION,
+  porcentajeHp,
+  hpFaltante,
+  costoReparacion,
+  puedePelear,
   estadoReparacion,
-  reparar,
-  PORCENTAJE_MINIMO_PARA_PELEAR
+  reparar
 };

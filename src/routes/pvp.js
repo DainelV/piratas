@@ -6,6 +6,12 @@ const { db } = require('../db/database');
 
 const router = express.Router();
 
+/**
+ * GET /api/pvp/enemigos
+ * Lista de posibles rivales (activos e inactivos) dentro del rango de
+ * nivel del usuario, para que el usuario elija contra quién pelear.
+ * Incluye el estado de cooldown y de reparación del propio usuario.
+ */
 router.get('/enemigos', requireAuth, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
   if (!user) return res.status(401).json({ error: 'No autenticado' });
@@ -26,6 +32,11 @@ router.get('/enemigos', requireAuth, (req, res) => {
   });
 });
 
+/**
+ * POST /api/pvp/pelear
+ * body: { enemigoId }
+ * Ejecuta la batalla automática por turnos contra el enemigo elegido.
+ */
 router.post('/pelear', requireAuth, (req, res) => {
   const { enemigoId } = req.body || {};
   const rivalId = Number(enemigoId);
@@ -44,7 +55,6 @@ router.post('/pelear', requireAuth, (req, res) => {
         minutosRestantes: resultado.minutosRestantes
       });
     }
-
     if (resultado.razon === 'necesita_reparar') {
       return res.status(400).json({
         error: `Tu barco está muy dañado (menos del 30% de HP). Repáralo antes de pelear (costo: ${resultado.costoReparacion} oro).`,
@@ -52,13 +62,11 @@ router.post('/pelear', requireAuth, (req, res) => {
         costoReparacion: resultado.costoReparacion
       });
     }
-
     const mensajes = {
       usuario_no_encontrado: 'No se encontró al enemigo elegido',
       fuera_de_rango: 'Ese rival ya no está dentro de tu rango de nivel',
       no_podes_pelear_contra_vos_mismo: 'No podés pelear contra vos mismo'
     };
-
     return res.status(400).json({
       error: mensajes[resultado.razon] || 'No se pudo iniciar la batalla',
       razon: resultado.razon

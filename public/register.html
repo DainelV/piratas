@@ -1,29 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registro - Piratas del Caribe</title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <h1>⚓ Registrarse</h1>
-      <form id="registerForm">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" required />
-        </div>
-        <div class="form-group">
-          <label for="password">Contraseña (mínimo 6 caracteres)</label>
-          <input type="password" id="password" required />
-        </div>
-        <button type="submit" class="btn">Registrarse</button>
-      </form>
-      <div id="error" class="error"></div>
-      <p>¿Ya tienes cuenta? <a href="/login.html">Inicia Sesión</a></p>
-    </div>
-    <script src="/js/api.js"></script>
-    <script src="/js/auth.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro — Piratas del Caribe</title>
+  <link rel="stylesheet" href="/css/estilo.css" />
+</head>
+<body>
+  <h1>🏴‍☠️ Únete a la tripulación</h1>
+  <p class="subtitulo" id="refInfo">Crear cuenta con email y contraseña</p>
+
+  <div class="card">
+    <form id="formRegistro">
+      <input type="text" id="nombre" placeholder="Nombre de capitán (2-20 caracteres)" required minlength="2" maxlength="20" />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6" />
+      <button type="submit">Zarpar 🚢</button>
+    </form>
+    <p class="mensaje" id="mensaje"></p>
+    <p><a class="link" href="/login.html">¿Ya tenés cuenta? Iniciar sesión</a></p>
+  </div>
+
+  <script>
+    // El link de referido es /register?ref=ID (sin código manual).
+    // Lo tomamos de la URL y lo mandamos junto con el registro.
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+
+    if (ref) {
+      document.getElementById('refInfo').textContent =
+        `Te invitó el pirata #${ref} — al registrarte quedará vinculado`;
+    }
+
+    document.getElementById('formRegistro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const mensaje = document.getElementById('mensaje');
+      mensaje.textContent = '';
+      mensaje.className = 'mensaje';
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, password, ref })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          mensaje.textContent = data.error || 'No se pudo registrar';
+          mensaje.classList.add('error');
+          return;
+        }
+
+        mensaje.textContent = '¡Bienvenido a bordo! Redirigiendo...';
+        mensaje.classList.add('ok');
+        setTimeout(() => { window.location.href = '/dashboard.html'; }, 700);
+      } catch (err) {
+        mensaje.textContent = 'Error de conexión con el servidor';
+        mensaje.classList.add('error');
+      }
+    });
+  </script>
+</body>
 </html>

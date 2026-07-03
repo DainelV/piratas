@@ -1,0 +1,1 @@
+npm --proxy http://dainel.varela:DVV.informatico.97@10.10.13.10:3128 install

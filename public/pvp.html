@@ -1,44 +1,218 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Batallas PvP - Piratas del Caribe</title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <nav>
-        <a href="/dashboard.html">🏠 Dashboard</a>
-        <a href="/perfil.html">👤 Perfil</a>
-        <a href="/pvp.html">⚔️ Batallas</a>
-        <a href="#" id="logoutBtn">🚪 Salir</a>
-      </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PvP — Piratas del Caribe</title>
+  <link rel="stylesheet" href="/css/estilo.css" />
+  <style>
+    .enemigo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .enemigo .info { font-size: 0.85rem; color: #d8c69a; }
+    .enemigo .nombre { font-weight: bold; color: #ffe08a; }
+    .enemigo .nombre .punto {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .punto.on { background: #7fdc8f; }
+    .punto.off { background: #888; }
+    .enemigo button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .enemigo button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .log {
+      text-align: left;
+      max-height: 220px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .log div { padding: 2px 0; border-bottom: 1px solid #ffffff11; }
+    .cooldown-aviso {
+      background: rgba(255,143,143,0.15);
+      border: 1px solid #ff8f8f55;
+      border-radius: 8px;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚔️ Combate PvP</h1>
+  <p class="subtitulo" id="rangoInfo">Cargando enemigos...</p>
 
-      <h1>⚔️ Arena de Batallas</h1>
+  <div id="tutorialBatalla"></div>
 
-      <div id="cooldownInfo" class="card">
-        <h3>⏳ Cooldown</h3>
-        <p id="cooldownStatus">Listo para pelear</p>
-      </div>
+  <div class="card" id="cooldownCard" style="display:none;">
+    <p class="cooldown-aviso" id="cooldownTexto"></p>
+  </div>
 
-      <div id="reparacionInfo" class="card">
-        <h3>🔧 Estado del Barco</h3>
-        <p id="estadoBarco"></p>
-      </div>
+  <div class="card" id="reparacionCard" style="display:none;">
+    <p class="cooldown-aviso" id="reparacionTexto"></p>
+    <p><a class="link" href="/perfil.html">Ir a reparar →</a></p>
+  </div>
 
-      <div id="enemigosList" class="card">
-        <h3>🏴‍☠️ Rivales Disponibles</h3>
-        <div id="enemigosContainer"></div>
-      </div>
+  <div class="card">
+    <p class="subtitulo">Rivales en tu rango de nivel</p>
+    <p class="mensaje" style="font-size:0.8rem; color:#d8c69a;">
+      🟢 activo ahora · ⚪ inactivo (también se puede atacar y robarle oro)
+    </p>
+    <div id="listaEnemigos"></div>
+    <p class="mensaje" id="sinEnemigos" style="display:none; font-size:0.85rem; color:#d8c69a;">
+      No hay rivales en tu rango de nivel todavía.
+    </p>
+  </div>
 
-      <div id="resultadoBatalla" class="card" style="display: none">
-        <h3>⚔️ Resultado de la Batalla</h3>
-        <div id="resultadoContenido"></div>
-      </div>
-    </div>
+  <div class="card" id="resultadoCard" style="display:none;">
+    <p class="subtitulo" id="resultadoTitulo"></p>
+    <p class="mensaje" id="resultadoResumen"></p>
+    <div class="log" id="log"></div>
+  </div>
 
-    <script src="/js/api.js"></script>
-    <script src="/js/pvp.js"></script>
-  </body>
+  <div class="card">
+    <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
+  </div>
+
+  <script src="/js/tutorial.js"></script>
+  <script>
+    let enCooldown = false;
+    let necesitaReparar = false;
+
+    async function cargarEnemigos() {
+      const res = await fetch('/api/pvp/enemigos');
+      if (!res.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+      const data = await res.json();
+      const rango = data.rango;
+      document.getElementById('rangoInfo').textContent =
+        rango.min === rango.max
+          ? `Buscando rivales de nivel ${rango.min}`
+          : `Buscando rivales de nivel ${rango.min} a ${rango.max}`;
+
+      pintarCooldown(data.cooldown);
+      pintarReparacion(data.reparacion);
+      pintarEnemigos(data.enemigos);
+    }
+
+    function pintarCooldown(cooldown) {
+      enCooldown = cooldown.enCooldown;
+      const card = document.getElementById('cooldownCard');
+      if (cooldown.enCooldown) {
+        card.style.display = 'block';
+        document.getElementById('cooldownTexto').textContent =
+          `⏳ En cooldown: podés volver a atacar en ~${cooldown.minutosRestantes} min (cooldown total a tu nivel: ${cooldown.cooldownTotalMinutos} min)`;
+      } else {
+        card.style.display = 'none';
+      }
+    }
+
+    function pintarReparacion(reparacion) {
+      necesitaReparar = reparacion && !reparacion.puedePelear;
+      const card = document.getElementById('reparacionCard');
+      if (necesitaReparar) {
+        card.style.display = 'block';
+        document.getElementById('reparacionTexto').textContent =
+          `⚠️ Tu barco está al ${reparacion.porcentaje.toFixed(1)}% de HP (menos del 30%). No podés atacar hasta reparar (costo: ${reparacion.costoReparacion} oro).`;
+      } else {
+        card.style.display = 'none';
+      }
+    }
+
+    function pintarEnemigos(enemigos) {
+      const cont = document.getElementById('listaEnemigos');
+      cont.innerHTML = '';
+
+      if (!enemigos.length) {
+        document.getElementById('sinEnemigos').style.display = 'block';
+        return;
+      }
+      document.getElementById('sinEnemigos').style.display = 'none';
+
+      enemigos.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'enemigo item-lista';
+        div.innerHTML = `
+          <div>
+            <div class="nombre"><span class="punto ${e.activo ? 'on' : 'off'}"></span>${e.alias}</div>
+            <div class="info">Nivel ${e.nivel} · HP ${e.hp}/${e.hpMax} · ⛵${e.velas} 💣${e.canones} 🚢${e.casco}</div>
+            <div class="info">🪙 ${e.oro} oro · 🏆 ${e.victorias} — 💀 ${e.derrotas}</div>
+          </div>
+          <button data-id="${e.id}" ${(enCooldown || necesitaReparar) ? 'disabled' : ''}>Atacar</button>
+        `;
+        div.querySelector('button').addEventListener('click', () => pelear(e.id));
+        cont.appendChild(div);
+      });
+    }
+
+    async function pelear(enemigoId) {
+      const res = await fetch('/api/pvp/pelear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enemigoId })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'No se pudo pelear');
+        cargarEnemigos();
+        return;
+      }
+
+      mostrarResultado(data);
+      cargarEnemigos(); // refresca HPs, oro y cooldown
+    }
+
+    function mostrarResultado(data) {
+      const card = document.getElementById('resultadoCard');
+      card.style.display = 'block';
+
+      const ganaste = data.ganador === 'retador';
+      document.getElementById('resultadoTitulo').textContent = ganaste ? '🏆 ¡Ganaste!' : '💀 Perdiste';
+      document.getElementById('resultadoTitulo').className = ganaste ? 'subtitulo ok' : 'subtitulo error';
+
+      let resumen = `Tu HP final: ${data.hpFinalRetador} · HP rival final: ${data.hpFinalRival}`;
+      if (data.oroTransferido > 0) {
+        resumen += ganaste
+          ? ` · Le robaste ${data.oroTransferido} oro 🪙`
+          : ` · Te robaron ${data.oroTransferido} oro 🪙`;
+      }
+      resumen += ` · Próxima batalla disponible en ${data.cooldownMinutos} min`;
+      document.getElementById('resultadoResumen').textContent = resumen;
+
+      const log = document.getElementById('log');
+      log.innerHTML = data.turnos.map(t =>
+        `<div>Turno ${t.turno} — ${t.quienAtaca === 'retador' ? 'Vos' : 'Rival'} atacan: -${t.dano} HP</div>`
+      ).join('');
+    }
+
+    cargarEnemigos();
+
+    mostrarTutorial('batalla', document.getElementById('tutorialBatalla'), `
+      <h3>⚔️ Cómo funciona el combate</h3>
+      <ul>
+        <li><b>Rivales:</b> hasta nivel 5 solo peleás contra tu mismo
+        nivel; de ahí en más, ±3 niveles. Los inactivos (⚪) también se
+        pueden atacar.</li>
+        <li><b>Daño:</b> cañones + (HP máximo/10) − (velas del rival × 0.5).</li>
+        <li>El ganador le <b>roba oro</b> al perdedor: el 5% de lo que
+        tenga en ese momento (sin tope de capacidad de bodega).</li>
+        <li><b>Cooldown:</b> 5 min base entre batallas, +10 min cada 10
+        niveles tuyos.</li>
+        <li>Si tu HP baja de <b>30%</b>, no podés atacar hasta reparar en
+        tu ficha de capitán.</li>
+      </ul>
+    `);
+  </script>
+</body>
 </html>

@@ -6,6 +6,11 @@ const { toPublicUser } = require('../models/user');
 
 const router = express.Router();
 
+/**
+ * GET /api/repair/estado
+ * Estado de reparación del barco: HP actual/máximo, si puede pelear
+ * (>= 30% HP) y cuánto costaría repararlo al 100% ahora mismo.
+ */
 router.get('/estado', requireAuth, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
   if (!user) return res.status(401).json({ error: 'No autenticado' });
@@ -16,6 +21,11 @@ router.get('/estado', requireAuth, (req, res) => {
   });
 });
 
+/**
+ * POST /api/repair
+ * Repara el barco al 100% de HP. Costo en oro = HP faltante hasta
+ * el 100% (1 oro por punto de HP). Reparación completa únicamente.
+ */
 router.post('/', requireAuth, (req, res) => {
   const resultado = reparar(req.session.userId);
 

@@ -1,7 +1,7 @@
 {
   "name": "piratas-del-caribe",
   "version": "1.0.0",
-  "description": "Juego de navegador multijugador de piratas con barcos, batallas y economía",
+  "description": "Juego online de piratas - Paso 2: registro/login + referidos",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

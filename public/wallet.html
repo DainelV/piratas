@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billetera — Piratas del Caribe</title>
+  <link rel="stylesheet" href="/css/estilo.css" />
+  <style>
+    .conversion {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid #d8c69a33;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+    .whatsapp {
+      background: rgba(127,220,143,0.12);
+      border: 1px solid #7fdc8f55;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .historial-item {
+      text-align: left;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #ffffff11;
+      padding: 6px 0;
+    }
+    .estado-pendiente { color: #ffe08a; }
+    .estado-aprobado { color: #7fdc8f; }
+    .estado-rechazado { color: #ff8f8f; }
+  </style>
+</head>
+<body>
+  <h1>🪙 Billetera</h1>
+  <p class="subtitulo">Depósitos y retiros de oro</p>
+
+  <div class="card">
+    <p class="subtitulo">🛒 Depositar (CUP → oro)</p>
+    <div id="tutorialTienda"></div>
+    <p class="conversion" id="conversionDeposito">1 CUP = 70 oro</p>
+    <form id="formDeposito">
+      <input type="number" id="montoCup" placeholder="Monto en CUP" min="1" step="0.01" required />
+      <p class="mensaje" id="previewDeposito" style="font-size:0.85rem; color:#d8c69a;"></p>
+      <input type="tel" id="telefonoDeposito" placeholder="Tu teléfono de contacto" required />
+      <button type="submit">Crear solicitud de depósito</button>
+    </form>
+    <p class="mensaje" id="mensajeDeposito"></p>
+    <p class="whatsapp" id="whatsappDeposito"></p>
+  </div>
+
+  <div class="card">
+    <p class="subtitulo">Retirar (oro → CUP)</p>
+    <div id="tutorialRetiro"></div>
+    <p class="conversion" id="conversionRetiro">100 oro = 1 CUP · mínimo 10.000 oro · 1 retiro por día</p>
+    <form id="formRetiro">
+      <input type="number" id="montoOro" placeholder="Cantidad de oro (mín. 10.000)" min="10000" step="1" required />
+      <p class="mensaje" id="previewRetiro" style="font-size:0.85rem; color:#d8c69a;"></p>
+      <input type="tel" id="telefonoRetiro" placeholder="Tu teléfono de contacto" required />
+      <button type="submit">Crear solicitud de retiro</button>
+    </form>
+    <p class="mensaje" id="mensajeRetiro"></p>
+    <p class="whatsapp" id="whatsappRetiro"></p>
+  </div>
+
+  <div class="card">
+    <p class="subtitulo">Historial</p>
+    <div id="historial"></div>
+    <p class="mensaje" id="sinHistorial" style="display:none; font-size:0.85rem; color:#d8c69a;">Todavía no tenés depósitos ni retiros.</p>
+  </div>
+
+  <div class="card">
+    <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
+  </div>
+
+  <script src="/js/tutorial.js"></script>
+  <script>
+    let tasas = null;
+
+    async function cargarTasas() {
+      const res = await fetch('/api/wallet/tasas');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      tasas = await res.json();
+
+      document.getElementById('conversionDeposito').textContent = `1 CUP = ${tasas.deposito.oroPorCup} oro`;
+      document.getElementById('conversionRetiro').textContent =
+        `${tasas.retiro.oroPorCup} oro = 1 CUP · mínimo ${tasas.retiro.minimoOro.toLocaleString()} oro · 1 retiro cada ${tasas.retiro.horasEntreRetiros}h`;
+      document.getElementById('whatsappDeposito').textContent =
+        `📱 Para coordinar el pago, comunicate por WhatsApp al ${tasas.deposito.whatsapp}`;
+      document.getElementById('whatsappRetiro').textContent =
+        `📱 Para coordinar el pago, comunicate por WhatsApp al ${tasas.retiro.whatsapp}`;
+    }
+
+    document.getElementById('montoCup').addEventListener('input', (e) => {
+      if (!tasas) return;
+      const cup = Number(e.target.value) || 0;
+      const oro = cup * tasas.deposito.oroPorCup;
+      document.getElementById('previewDeposito').textContent = `= ${oro.toLocaleString()} oro`;
+    });
+
+    document.getElementById('montoOro').addEventListener('input', (e) => {
+      if (!tasas) return;
+      const oro = Number(e.target.value) || 0;
+      const cup = oro / tasas.retiro.oroPorCup;
+      document.getElementById('previewRetiro').textContent = `= ${cup.toLocaleString()} CUP`;
+    });
+
+    document.getElementById('formDeposito').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const montoCup = document.getElementById('montoCup').value;
+      const telefono = document.getElementById('telefonoDeposito').value;
+      const mensaje = document.getElementById('mensajeDeposito');
+      mensaje.textContent = ''; mensaje.className = 'mensaje';
+
+      const res = await fetch('/api/wallet/depositos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ montoCup, telefono })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        mensaje.textContent = data.error || 'No se pudo crear el depósito';
+        mensaje.classList.add('error');
+        return;
+      }
+      mensaje.textContent = data.mensaje;
+      mensaje.classList.add('ok');
+      e.target.reset();
+      cargarHistorial();
+    });
+
+    document.getElementById('formRetiro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const montoOro = document.getElementById('montoOro').value;
+      const telefono = document.getElementById('telefonoRetiro').value;
+      const mensaje = document.getElementById('mensajeRetiro');
+      mensaje.textContent = ''; mensaje.className = 'mensaje';
+
+      const res = await fetch('/api/wallet/retiros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ montoOro, telefono })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        mensaje.textContent = data.error || 'No se pudo crear el retiro';
+        mensaje.classList.add('error');
+        return;
+      }
+      mensaje.textContent = data.mensaje;
+      mensaje.classList.add('ok');
+      e.target.reset();
+      cargarHistorial();
+    });
+
+    async function cargarHistorial() {
+      const res = await fetch('/api/wallet/historial');
+      if (!res.ok) return;
+      const { historial } = await res.json();
+
+      const cont = document.getElementById('historial');
+      cont.innerHTML = '';
+
+      if (!historial.length) {
+        document.getElementById('sinHistorial').style.display = 'block';
+        return;
+      }
+      document.getElementById('sinHistorial').style.display = 'none';
+
+      historial.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'historial-item';
+        const fecha = new Date(t.creado_en).toLocaleString();
+        const tipoTexto = t.tipo === 'deposito' ? '⬇️ Depósito' : '⬆️ Retiro';
+        div.innerHTML = `
+          ${tipoTexto} — ${t.monto_cup} CUP / ${t.monto_oro} oro
+          — <span class="estado-${t.estado}">${t.estado}</span><br/>
+          <span style="color:#d8c69a;">${fecha}</span>
+        `;
+        cont.appendChild(div);
+      });
+    }
+
+    cargarTasas();
+    cargarHistorial();
+
+    mostrarTutorial('tienda', document.getElementById('tutorialTienda'), `
+      <h3>🛒 Comprar oro</h3>
+      <ul>
+        <li>Tasa fija: <b>1 CUP = 70 oro</b>.</li>
+        <li>Completá el monto y tu teléfono, enviá la solicitud, y
+        comunicate por WhatsApp al número indicado para coordinar el pago.</li>
+        <li>El oro <b>no se acredita solo</b>: un admin revisa y aprueba
+        cada solicitud antes de sumarte el oro.</li>
+      </ul>
+    `);
+
+    mostrarTutorial('retiro', document.getElementById('tutorialRetiro'), `
+      <h3>💵 Retirar oro</h3>
+      <ul>
+        <li>Tasa fija: <b>100 oro = 1 CUP</b>.</li>
+        <li>Mínimo por retiro: <b>10.000 oro</b> (= 100 CUP).</li>
+        <li>Solo se puede pedir <b>1 retiro por día</b>.</li>
+        <li>El oro se descuenta al pedirlo. Si el admin rechaza tu
+        solicitud, se te devuelve automáticamente.</li>
+        <li>Coordinás el cobro en CUP por WhatsApp una vez aprobado.</li>
+      </ul>
+    `);
+  </script>
+</body>
+</html>

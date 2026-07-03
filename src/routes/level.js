@@ -24,12 +24,30 @@ function estadoParaUsuario(user) {
   };
 }
 
+/**
+ * GET /api/level/estado
+ * Info de nivel del jugador: nivel actual, nivel del barco (promedio
+ * de velas/cañones/casco), costo en oro y referidos requeridos
+ * para el próximo nivel (incluye la reparación automática a 100% que
+ * se paga al subir), y si ya puede subir.
+ */
 router.get('/estado', requireAuth, (req, res) => {
   const user = aplicarProduccion(req.session.userId);
   if (!user) return res.status(401).json({ error: 'No autenticado' });
   res.json(estadoParaUsuario(user));
 });
 
+/**
+ * POST /api/level/subir
+ * Intenta subir un nivel. Reglas:
+ *  - Nivel 1 a 3: solo pide oro
+ *  - Nivel 3+: pide oro + un mínimo de referidos activos (piratas),
+ *    y ese mínimo sube +1 cada 10 niveles
+ * Cada nivel aumenta la producción (ya calculada por nivel), desbloquea
+ * mejoras (el tope de mejora de velas/cañones/casco queda ligado al nivel),
+ * y paga automáticamente la reparación del barco a 100% de HP (el costo
+ * de esa reparación se suma al costo del nivel).
+ */
 router.post('/subir', requireAuth, (req, res) => {
   const resultado = subirNivel(req.session.userId);
 

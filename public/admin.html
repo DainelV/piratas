@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Piratas del Caribe</title>
+  <link rel="stylesheet" href="/css/estilo.css" />
+  <style>
+    .tx, .usuario {
+      text-align: left;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid #d8c69a33;
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .tx .acciones, .usuario .acciones { margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .tx button, .usuario button { padding: 0.4rem 0.7rem; font-size: 0.8rem; }
+    .btn-rechazar, .btn-banear { background: #ff8f8f; }
+    .btn-desbanear { background: #7fdc8f; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      text-align: left;
+    }
+    .stat-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 0.5rem 0.7rem;
+    }
+    .stat-box .n { font-size: 1.2rem; font-weight: bold; color: #ffe08a; }
+    .stat-box .l { font-size: 0.75rem; color: #d8c69a; }
+    .badge {
+      display: inline-block;
+      background: #ff8f8f;
+      color: #1c1200;
+      border-radius: 10px;
+      padding: 0 7px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-left: 6px;
+    }
+    .edit-form { display: flex; gap: 0.4rem; margin-top: 0.4rem; flex-wrap: wrap; }
+    .edit-form input { width: 80px; padding: 0.3rem; font-size: 0.8rem; }
+    .baneado-tag { color: #ff8f8f; font-weight: bold; }
+    input#buscarUsuario { margin-bottom: 0.6rem; }
+  </style>
+</head>
+<body>
+  <h1>🛠️ Panel de administración</h1>
+  <p class="subtitulo" id="tituloNotif">Piratas del Caribe</p>
+
+  <div class="card" id="sinAcceso" style="display:none;">
+    <p class="mensaje error">No tenés permisos de administrador.</p>
+    <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
+  </div>
+
+  <div id="contenidoAdmin" style="display:none;">
+
+    <div class="card">
+      <p class="subtitulo">📊 Estadísticas globales</p>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+
+    <div class="card">
+      <p class="subtitulo">💰 Solicitudes pendientes <span id="badgePendientes"></span></p>
+      <div id="listaPendientes"></div>
+      <p class="mensaje" id="sinPendientes" style="display:none; font-size:0.85rem; color:#d8c69a;">No hay solicitudes pendientes.</p>
+    </div>
+
+    <div class="card">
+      <p class="subtitulo">👥 Usuarios</p>
+      <input id="buscarUsuario" placeholder="Buscar por nombre o email..." />
+      <div id="listaUsuarios"></div>
+    </div>
+
+    <div class="card">
+      <p><a class="link" href="/dashboard.html">← Volver al panel</a></p>
+    </div>
+  </div>
+
+  <script>
+    let idsPendientesConocidos = new Set();
+    let primeraCarga = true;
+
+    async function verificarAdmin() {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) { window.location.href = '/login.html'; return false; }
+      const { user } = await res.json();
+      if (!user.isAdmin) {
+        document.getElementById('sinAcceso').style.display = 'block';
+        return false;
+      }
+      document.getElementById('contenidoAdmin').style.display = 'block';
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      return true;
+    }
+
+    async function cargarStats() {
+      const res = await fetch('/api/admin/estadisticas');
+      if (!res.ok) return;
+      const s = await res.json();
+
+      const items = [
+        ['Usuarios totales', s.totalUsuarios],
+        ['Oro en circulación', s.oroEnCirculacion.toLocaleString()],
+        ['Activos (24h)', s.activosUltimas24h],
+        ['Nivel promedio', s.nivelPromedio],
+        ['Total referidos', s.totalReferidos],
+        ['Batallas ganadas (total)', s.totalBatallas],
+        ['Usuarios baneados', s.totalBaneados],
+        ['Admins', s.totalAdmins],
+        ['Depósitos pendientes', s.depositosPendientes],
+        ['Retiros pendientes', s.retirosPendientes],
+        ['Oro depositado (aprobado)', s.oroDepositadoAprobado.toLocaleString()],
+        ['Oro retirado (aprobado)', s.oroRetiradoAprobado.toLocaleString()],
+        ['CUP recibidos (aprobado)', s.cupDepositadoAprobado.toLocaleString()],
+        ['CUP pagados (aprobado)', s.cupRetiradoAprobado.toLocaleString()]
+      ];
+
+      document.getElementById('statsGrid').innerHTML = items.map(([l, n]) =>
+        `<div class="stat-box"><div class="n">${n}</div><div class="l">${l}</div></div>`
+      ).join('');
+    }
+
+    async function cargarPendientes() {
+      const res = await fetch('/api/admin/transacciones');
+      if (!res.ok) return;
+      const { pendientes } = await res.json();
+
+      // Notificación de nuevas solicitudes (comparando contra lo ya visto)
+      const idsActuales = new Set(pendientes.map(t => t.id));
+      if (!primeraCarga) {
+        const nuevos = pendientes.filter(t => !idsPendientesConocidos.has(t.id));
+        nuevos.forEach(t => notificar(t));
+      }
+      idsPendientesConocidos = idsActuales;
+      primeraCarga = false;
+
+      const badge = document.getElementById('badgePendientes');
+      badge.innerHTML = pendientes.length > 0 ? `<span class="badge">${pendientes.length}</span>` : '';
+      document.title = pendientes.length > 0 ? `(${pendientes.length}) Admin — Piratas del Caribe` : 'Admin — Piratas del Caribe';
+
+      const cont = document.getElementById('listaPendientes');
+      cont.innerHTML = '';
+
+      if (!pendientes.length) {
+        document.getElementById('sinPendientes').style.display = 'block';
+        return;
+      }
+      document.getElementById('sinPendientes').style.display = 'none';
+
+      pendientes.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'tx';
+        const tipoTexto = t.tipo === 'deposito' ? '⬇️ Depósito' : '⬆️ Retiro';
+        const fecha = new Date(t.creado_en).toLocaleString();
+        div.innerHTML = `
+          <div><b>${tipoTexto}</b> — ${t.email}</div>
+          <div>${t.monto_cup} CUP / ${t.monto_oro} oro · 📱 ${t.telefono}</div>
+          <div style="color:#d8c69a;">${fecha}</div>
+          <div class="acciones">
+            <button data-id="${t.id}" data-accion="aprobar">✔ Aprobar</button>
+            <button data-id="${t.id}" data-accion="rechazar" class="btn-rechazar">✘ Rechazar</button>
+          </div>
+        `;
+        div.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => resolverTransaccion(t.id, btn.dataset.accion));
+        });
+        cont.appendChild(div);
+      });
+    }
+
+    function notificar(t) {
+      const tipoTexto = t.tipo === 'deposito' ? 'Nuevo depósito' : 'Nuevo retiro';
+      const texto = `${tipoTexto}: ${t.monto_cup} CUP / ${t.monto_oro} oro — ${t.email}`;
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('🪙 ' + tipoTexto, { body: texto });
+      }
+      document.getElementById('tituloNotif').textContent = '🔔 ' + texto;
+    }
+
+    async function resolverTransaccion(id, accion) {
+      const res = await fetch(`/api/admin/transacciones/${id}/${accion}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'No se pudo procesar'); return; }
+      cargarPendientes();
+      cargarStats();
+      cargarUsuarios();
+    }
+
+    async function cargarUsuarios(q) {
+      const url = q ? `/api/admin/usuarios?q=${encodeURIComponent(q)}` : '/api/admin/usuarios';
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const { usuarios } = await res.json();
+
+      const cont = document.getElementById('listaUsuarios');
+      cont.innerHTML = '';
+
+      usuarios.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'usuario';
+        div.innerHTML = `
+          <div><b>#${u.id} ${u.nombre || '(sin nombre)'}</b> <span style="opacity:0.7; font-weight:normal;">${u.email}</span> ${u.isAdmin ? '👑' : ''} ${u.baneado ? '<span class="baneado-tag">BANEADO</span>' : ''}</div>
+          <div>Nivel ${u.nivel} · HP ${u.hp}/${u.hpMax} · 🪙 ${u.oro} · 🧑‍🦱 ${u.piratas} · 🏆${u.pvpVictorias}/💀${u.pvpDerrotas}</div>
+          <div class="edit-form">
+            <input type="number" placeholder="Nivel" data-campo="nivel" value="${u.nivel}" min="1" max="100" />
+            <input type="number" placeholder="HP" data-campo="hp" value="${u.hp}" min="0" max="${u.hpMax}" />
+            <input type="number" placeholder="Oro" data-campo="oro" value="${u.oro}" min="0" />
+            <button data-accion="guardar">💾 Guardar</button>
+          </div>
+          <div class="acciones">
+            ${u.baneado
+              ? `<button data-accion="desbanear" class="btn-desbanear">Desbanear</button>`
+              : `<button data-accion="banear" class="btn-banear">Banear</button>`}
+          </div>
+        `;
+
+        div.querySelector('[data-accion="guardar"]').addEventListener('click', () => {
+          const nivel = div.querySelector('[data-campo="nivel"]').value;
+          const hp = div.querySelector('[data-campo="hp"]').value;
+          const oro = div.querySelector('[data-campo="oro"]').value;
+          modificarUsuario(u.id, { nivel, hp, oro });
+        });
+
+        const btnBan = div.querySelector('[data-accion="banear"]');
+        if (btnBan) btnBan.addEventListener('click', () => {
+          const motivo = prompt('Motivo del baneo (opcional):') || '';
+          banearUsuario(u.id, motivo);
+        });
+
+        const btnDesban = div.querySelector('[data-accion="desbanear"]');
+        if (btnDesban) btnDesban.addEventListener('click', () => desbanearUsuario(u.id));
+
+        cont.appendChild(div);
+      });
+    }
+
+    async function modificarUsuario(id, cambios) {
+      const res = await fetch(`/api/admin/usuarios/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cambios)
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'No se pudo modificar'); return; }
+      cargarUsuarios(document.getElementById('buscarUsuario').value);
+      cargarStats();
+    }
+
+    async function banearUsuario(id, motivo) {
+      const res = await fetch(`/api/admin/usuarios/${id}/banear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo })
+      });
+      if (!res.ok) { alert('No se pudo banear'); return; }
+      cargarUsuarios(document.getElementById('buscarUsuario').value);
+      cargarStats();
+    }
+
+    async function desbanearUsuario(id) {
+      const res = await fetch(`/api/admin/usuarios/${id}/desbanear`, { method: 'POST' });
+      if (!res.ok) { alert('No se pudo desbanear'); return; }
+      cargarUsuarios(document.getElementById('buscarUsuario').value);
+      cargarStats();
+    }
+
+    let temporizadorBusqueda = null;
+    document.getElementById('buscarUsuario').addEventListener('input', (e) => {
+      clearTimeout(temporizadorBusqueda);
+      temporizadorBusqueda = setTimeout(() => cargarUsuarios(e.target.value), 300);
+    });
+
+    (async () => {
+      const esAdmin = await verificarAdmin();
+      if (!esAdmin) return;
+      cargarStats();
+      cargarPendientes();
+      cargarUsuarios();
+      // Sondeo periódico para detectar nuevas solicitudes (notificación).
+      setInterval(() => { cargarPendientes(); cargarStats(); }, 15000);
+    })();
+  </script>
+</body>
+</html>
